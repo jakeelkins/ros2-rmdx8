@@ -86,7 +86,7 @@ private:
     float e_dot = qd_dot - q_dot;
 
     float Kp = 10.0f;
-    float Kd = 1.5f;
+    float Kd = 1.2f;
 
     float u = Kp*e + Kd*e_dot;
 
