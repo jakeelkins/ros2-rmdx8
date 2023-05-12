@@ -1,17 +1,4 @@
-// Copyright 2016 Open Source Robotics Foundation, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <math.h>
@@ -19,53 +6,106 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rmd_test/msg/desired_trajectory.hpp"
 #include "rmd_test/msg/control.hpp"
+#include "rmd_test/msg/state.hpp"
 
+using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 class Controller : public rclcpp::Node {
 public:
 
+  // nominal control frequency (s) CURRENT: ensure same as time publisher
+  float control_period = 0.02;
+
+  // needed for our timer: ms duration cast
+  std::chrono::duration<long double, std::milli> control_period_ms = control_period*1000ms;
+
+
   Controller():Node("controller"){
-    // TODO: will need subscribed to x as well.
+    // subscribe to current state x as input
+    subscription_x = this->create_subscription<rmd_test::msg::State>(
+      "state", 10, std::bind(&Controller::state_receive_callback, this, _1));
 
     // subscribe to topic desired_trajectory as input
-    subscription_ = this->create_subscription<rmd_test::msg::DesiredTrajectory>(
+    subscription_xd = this->create_subscription<rmd_test::msg::DesiredTrajectory>(
       "desired_trajectory", 10, std::bind(&Controller::traj_receive_callback, this, _1));
 
     // publish to control topic
     publisher_ = this->create_publisher<rmd_test::msg::Control>("control", 10);
 
+    // wall timer for publishing control
+    timer_ = this->create_wall_timer(
+        control_period_ms, std::bind(&Controller::control_callback, this));
+
   }
 
 private:
 
-  rclcpp::Subscription<rmd_test::msg::DesiredTrajectory>::SharedPtr subscription_;
+  rclcpp::Subscription<rmd_test::msg::State>::SharedPtr subscription_x;
+  rclcpp::Subscription<rmd_test::msg::DesiredTrajectory>::SharedPtr subscription_xd;
   rclcpp::Publisher<rmd_test::msg::Control>::SharedPtr publisher_;
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  // --  state ICs --
+  // match these to the desireds so u is 0 before the experiment runs
+  float q = 0.0f;
+  float q_dot = 0.0f;
+
+  // -- desired trajectory ICs --
+  float qd = 0.0f;
+  float qd_dot = 0.0f;
+  float qd_ddot = 0.0f;
+
+  void state_receive_callback(const rmd_test::msg::State &state_msg){
+
+    // -- record current state inputs --
+    q = state_msg.q;
+    q_dot = state_msg.q_dot;
+
+  }
 
   void traj_receive_callback(const rmd_test::msg::DesiredTrajectory &desired_traj_msg){
+
+    // -- record desired trajectory inputs --
+    qd = desired_traj_msg.qd;
+    qd_dot = desired_traj_msg.qd_dot;
+    qd_ddot = desired_traj_msg.qd_ddot;
+
+  }
+
+  // THE MEAT: controller.
+  void control_callback(){
 
     // out msg:
     auto control_msg = rmd_test::msg::Control();
 
-    // -- desired trajectory inputs --
-    float qd = desired_traj_msg.qd;
-    float qd_dot = desired_traj_msg.qd_dot;
-    float qd_ddot = desired_traj_msg.qd_ddot;
+    RCLCPP_INFO(this->get_logger(), "curr q: %f  curr q_dot: %f  curr qd: %f", q, q_dot, qd);
 
-    // TODO: how to handle multiple subscriptions?
-    // put input x here.
+    // ---- control calcs ----
+    float e = qd - q;
+    float e_dot = qd_dot - q_dot;
 
-    // controller calcs
-    // TODO
-    float u = 0.0f;
+    float Kp = 10.0f;
+    float Kd = 1.5f;
 
-    // put into msg and publish control
-    //RCLCPP_INFO(this->get_logger(), "Publishing desired trajectory...");
+    float u = Kp*e + Kd*e_dot;
+
+    //float u = 0.0f;
+
+    // clip
+    float clip = 10.0f;
+
+    if (u > clip){
+      u = clip;
+    } else if (u < -clip){
+      u = -clip;
+    }
+
+    // ------------------------
 
     control_msg.u = u;
 
     publisher_->publish(control_msg);
-
   }
   
 };

@@ -1,17 +1,3 @@
-// Copyright 2016 Open Source Robotics Foundation, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -32,8 +18,8 @@ public:
     bool go_flag = false;
     float t = 0.0f;  // actual t value we publish
 
-    // nominal control frequency (s)
-    float control_period = 1.;
+    // nominal control period (s)
+    float control_period = 0.01;
 
     // needed for our timer: ms duration cast
     std::chrono::duration<long double, std::milli> control_period_ms = control_period*1000ms;
@@ -67,13 +53,14 @@ private:
         }
 
         message.curr_t = t;
-        RCLCPP_INFO(this->get_logger(), "Publishing: %f", message.curr_t);
+        //RCLCPP_INFO(this->get_logger(), "Publishing: %f", message.curr_t);
         publisher_->publish(message);
     }
 
     void go_callback(const std_msgs::msg::Bool & msg){
         // sets the flag to true
         if (msg.data){
+            RCLCPP_INFO_ONCE(this->get_logger(), "Go flag received: experiment start.");
             go_flag = true;
         }
     }

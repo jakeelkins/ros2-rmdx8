@@ -13,7 +13,7 @@ find_package(std_msgs REQUIRED)
 
 # bc we use custom interfaces:
 find_package(rosidl_default_generators REQUIRED)
-set(msg_files "msg/Time.msg" "msg/DesiredTrajectory.msg" "msg/Control.msg")
+set(msg_files "msg/Time.msg" "msg/DesiredTrajectory.msg" "msg/Control.msg" "msg/State.msg")
 rosidl_generate_interfaces(${PROJECT_NAME} ${msg_files})
 ament_export_dependencies(rosidl_default_runtime)
 
@@ -27,9 +27,15 @@ ament_target_dependencies(trajectory_generator rclcpp)
 add_executable(controller src/controller.cpp)
 ament_target_dependencies(controller rclcpp)
 
+add_executable(reader src/reader.cpp)
+ament_target_dependencies(reader rclcpp)
+
+add_executable(commander src/commander.cpp)
+ament_target_dependencies(commander rclcpp)
+
 # -- for each executable added:
 install(TARGETS
-        time_publisher trajectory_generator controller
+        time_publisher trajectory_generator controller reader commander
         DESTINATION lib/${PROJECT_NAME})
 
 # to use launch file:
@@ -43,5 +49,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 target_link_libraries(time_publisher "${cpp_typesupport_target}")
 target_link_libraries(trajectory_generator "${cpp_typesupport_target}")
 target_link_libraries(controller "${cpp_typesupport_target}")
+target_link_libraries(reader "${cpp_typesupport_target}")
+target_link_libraries(commander "${cpp_typesupport_target}")
 
 ament_package()
