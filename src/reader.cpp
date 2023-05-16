@@ -157,7 +157,7 @@ public:
                 0, (struct sockaddr*)&addr, sizeof(addr));
 
         if (nbytes <= 0){
-            perror("Error in read angle send");
+            //perror("Error in read angle send");
             stat = EXIT_FAILURE;
         }
 
@@ -173,7 +173,7 @@ public:
             //RCLCPP_INFO(this->get_logger(), "got some angle reply..");
 
             if (nbytes <= 0){
-                perror("Read zero bytes in read angle");
+                //perror("Read zero bytes in read angle");
                 stat = EXIT_FAILURE;
                 break;
             }
@@ -204,7 +204,7 @@ public:
                 0, (struct sockaddr*)&addr, sizeof(addr));
 
                 if (nbytes <= 0){
-                    perror("Error in read angle send");
+                    //perror("Error in read angle send");
                     stat = EXIT_FAILURE;
                     //break;
                 }
@@ -228,7 +228,7 @@ public:
                 0, (struct sockaddr*)&addr, sizeof(addr));
 
         if (nbytes <= 0){
-            perror("Error in get motor status send");
+            //perror("Error in get motor status send");
             stat = EXIT_FAILURE;
         }
 
@@ -244,7 +244,7 @@ public:
             //RCLCPP_INFO(this->get_logger(), "got a status cmnd..");
 
             if (nbytes <= 0){
-                perror("Read zero bytes in get motor status");
+                //perror("Read zero bytes in get motor status");
                 stat = EXIT_FAILURE;
                 break;
             }
@@ -269,7 +269,7 @@ public:
                 0, (struct sockaddr*)&addr, sizeof(addr));
 
                 if (nbytes <= 0){
-                    perror("Error in get motor status send");
+                    //perror("Error in get motor status send");
                     stat = EXIT_FAILURE;
                     //break;
                 }

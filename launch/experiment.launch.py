@@ -13,4 +13,6 @@ def generate_launch_description():
             namespace= "experiment", package='rmd_test', executable='reader'),
         launch_ros.actions.Node(
             namespace= "experiment", package='rmd_test', executable='commander'),
+        launch_ros.actions.Node(
+            namespace= "experiment", package='rmd_test', executable='writer'),
     ])

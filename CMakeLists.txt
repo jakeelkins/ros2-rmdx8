@@ -33,9 +33,12 @@ ament_target_dependencies(reader rclcpp)
 add_executable(commander src/commander.cpp)
 ament_target_dependencies(commander rclcpp)
 
+add_executable(writer src/writer.cpp)
+ament_target_dependencies(writer rclcpp std_msgs)
+
 # -- for each executable added:
 install(TARGETS
-        time_publisher trajectory_generator controller reader commander
+        time_publisher trajectory_generator controller reader commander writer
         DESTINATION lib/${PROJECT_NAME})
 
 # to use launch file:
@@ -51,5 +54,6 @@ target_link_libraries(trajectory_generator "${cpp_typesupport_target}")
 target_link_libraries(controller "${cpp_typesupport_target}")
 target_link_libraries(reader "${cpp_typesupport_target}")
 target_link_libraries(commander "${cpp_typesupport_target}")
+target_link_libraries(writer "${cpp_typesupport_target}")
 
 ament_package()

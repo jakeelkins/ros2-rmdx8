@@ -359,7 +359,7 @@ public:
                 0, (struct sockaddr*)&addr, sizeof(addr));
 
         if (nbytes <= 0){
-            perror("Error in torque cmnd send");
+            //perror("Error in torque cmnd send");
             stat = EXIT_FAILURE;
         }
 
